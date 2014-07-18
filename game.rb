@@ -23,7 +23,7 @@ class Game
     @board[row][col] = 2
   end
 
-  def slide
+  def slide dir
     def smash row
       row = row.select {|x| x}
       if row.length >= 2 and row[0] == row[1]
@@ -37,9 +37,45 @@ class Game
     def refill row
       row.fill(nil, row.length, @size - row.length)
     end
-    @board = @board.
-      map {|_| smash _}.
-      map {|_| refill _}
+    def slide_left
+      @board = @board.
+        map {|_| smash _}.
+        map {|_| refill _}
+    end
+
+    def flip_horiz
+      @board = @board.map &:reverse
+    end
+
+    def flip_diag
+      new_board = Array.new(@size) {Array.new(@size)}
+      for col in 0...@size
+        for row in 0...@size
+          new_board[row][col] = @board[col][row]
+        end
+      end
+      @board = new_board
+    end
+    
+    case dir
+    when 'L' then
+      slide_left
+    when 'R' then 
+      flip_horiz
+      slide_left
+      flip_horiz
+    when 'U' then
+      flip_diag
+      slide_left
+      flip_diag
+    when 'D' then
+      flip_diag
+      flip_horiz
+      slide_left
+      flip_horiz
+      flip_diag
+    end
+    place()
   end
   
   def to_s
@@ -50,11 +86,20 @@ class Game
     end.join("\n")
   end
 end
-      
+
+
 g = Game.new
 
-puts g
+while true
+  puts g
 
-g.slide
+  print "move? "
+  dir = gets[0].upcase
+  until "URLD".index(dir)
+    print "move? "
+    dir = gets[0].upcase
+  end
 
-puts g
+  g.slide dir
+end
+
