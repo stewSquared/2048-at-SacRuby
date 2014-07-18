@@ -1,6 +1,7 @@
 class Game
-  def initialize
-    @board = Array.new(4) {Array.new(4)}
+  def initialize size=4
+    @size = size
+    @board = Array.new(@size) {Array.new(@size)}
     place()
     place()
   end
@@ -14,14 +15,33 @@ class Game
       tile_at(*pos) == nil
     end
 
-    pos = rand(4), rand(4)
+    pos = rand(@size), rand(@size)
     until free? pos
-      pos = rand(4), rand(4)
+      pos = rand(@size), rand(@size)
     end
     row, col = pos
     @board[row][col] = 2
   end
 
+  def slide
+    def smash row
+      row = row.select {|x| x}
+      if row.length >= 2 and row[0] == row[1]
+        row = [row.first*2] + row.drop(2)
+      end
+      if row.length >= 3
+        row = row = [row.first] + smash(row.drop(1))
+      end
+      return row
+    end
+    def refill row
+      row.fill(nil, row.length, @size - row.length)
+    end
+    @board = @board.
+      map {|_| smash _}.
+      map {|_| refill _}
+  end
+  
   def to_s
     @board.map do |row|
       row.map do |tile|
@@ -32,5 +52,9 @@ class Game
 end
       
 g = Game.new
+
+puts g
+
+g.slide
 
 puts g
